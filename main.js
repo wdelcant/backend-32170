@@ -2,84 +2,132 @@ const fs = require('fs');
 const path = require('path');
 
 class Contenedor {
-  constructor(file) {
-    this.file = file;
+  constructor(filename) {
+    this.filename = filename;
   }
 
-  async save(obj) {
-    const data = await this.getAll();
-    obj.id = data.length + 1;
-    data.push(obj);
-    await fs.promises.writeFile(this.file, JSON.stringify(data, null, 2));
-    return obj.id;
+  async save(element) {
+    try {
+      const parsedFile = await this.getParsedFileOrCreateIfNotExists();
+
+      element.id = parseInt(Math.random()) * 50;
+      parsedFile.push(element);
+
+      await fs.promises.writeFile(
+        this.filename,
+        JSON.stringify(parsedFile),
+        'utf-8'
+      );
+
+      return element.id;
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   async getById(id) {
-    const data = await this.getAll();
-    return data.find(aProduct => aProduct.id === id);
+    try {
+      file = await fs.promises.readFile(this.filename, 'utf-8');
+      const parsedFile = JSON.parse(file);
+      const element = parsedFile.find(el => el.id === id);
+
+      if (!element) throw new Error(`Element with ID ${id} doesn't exist`);
+
+      const { title, price, thumbnail } = el;
+      return { title, price, thumbnail };
+    } catch (error) {
+      console.error(error);
+    }
   }
 
   async getAll() {
     try {
-      const contenido = await fs.promises.readFile(this.file, 'utf-8');
-      return JSON.parse(contenido);
+      const file = await fs.promises.readFile(this.filename, 'utf-8');
+      const parsedFile = JSON.parse(file);
+
+      return parsedFile.map(el => {
+        const { title, price, thumbnail } = el;
+        return { title, price, thumbnail };
+      });
     } catch (error) {
-      await fs.promises.writeFile(this.file, '[]', 'utf-8');
-      return [];
+      console.error(error);
     }
   }
 
   async deleteById(id) {
-    const data = await this.getAll();
-    const newData = data.filter(aProduct => aProduct.id !== id);
-    await fs.promises.writeFile(this.file, JSON.stringify(newData, null, 2));
+    try {
+      const file = await fs.promises.readFile(this.filename, 'utf-8');
+      const parsedFile = JSON.parse(file);
+      const element = parsedFile.find(el => el.id === id);
+
+      if (!element) throw new Error(`Element with ID ${id} doesn't exist`);
+
+      const filteredArray = parsedFile.filter(el => el.id !== id); //
+      await fs.promises.writeFile(this.filename, JSON.stringify(filteredArray));
+    } catch (error) {
+      console.error(error);
+    }
   }
 
   async deleteAll() {
-    await fs.promises.writeFile(this.file, '[]', 'utf-8');
+    try {
+      await fs.promises.writeFile(this.filename, JSON.stringify('[]'));
+    } catch (error) {
+      console.error(error);
+    }
   }
 
   async getParsedFileOrCreateIfNotExists() {
+    let file;
+
     try {
-      const contenido = await fs.promises.readFile(this.file, 'utf-8');
-      return JSON.parse(contenido);
+      file = await fs.promises.readFile(this.filename, 'utf-8');
+      return JSON.parse(file);
     } catch (error) {
-      await fs.promises.writeFile(this.file, '[]', 'utf-8');
-      return [];
+      if (error.code === 'ENOENT') {
+        let emptyArray = [];
+        await fs.promises.writeFile(this.filename, JSON.stringify(emptyArray));
+        return emptyArray;
+      } else {
+        console.error(error);
+      }
     }
   }
 }
 
 (async () => {
-  const contenedor = new Contenedor(path.resolve(__dirname, 'productos.txt'));
+  const a = new Contenedor(path.join(__dirname, '..', 'temp', 'products.txt'));
 
-  await contenedor.save({
+  const indexElement1 = await a.save({
+    //producto 1
     title: 'Escuadra',
     price: 123.45,
     thumbnail:
       'https://cdn3.iconfinder.com/data/icons/education-209/64/ruler-triangle-stationary-school-256.png',
   });
-  await contenedor.save({
+
+  const indexElement2 = await a.save({
     title: 'Calculadora',
     price: 234.56,
     thumbnail:
       'https://cdn3.iconfinder.com/data/icons/education-209/64/calculator-math-tool-school-256.png',
   });
-  await contenedor.save({
+
+  const indexElement3 = await a.save({
     title: 'Globo Terráqueo',
     price: 345.67,
     thumbnail:
       'https://cdn3.iconfinder.com/data/icons/education-209/64/globe-earth-geograhy-planet-school-256.png',
   });
 
-  console.log(await contenedor.getAll());
-  console.log(await contenedor.getById(2));
+  console.log(
+    `First: ${indexElement1}, second: ${indexElement2}, third: ${indexElement3}`
+  );
 
-  await contenedor.deleteById(1);
+  await a.deleteById(indexElement2);
 
-  console.log(await contenedor.getAll());
+  const updatedList = await a.getAll();
 
-  await contenedor.deleteAll();
-
-  console.log(await contenedor.getAll());
+  console.log(updatedList);
+  console.log(updatedList.length);
 })();
