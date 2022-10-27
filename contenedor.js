@@ -1,5 +1,4 @@
 const fs = require('fs');
-const path = require('path');
 
 class Contenedor {
   constructor(filename) {
@@ -54,6 +53,19 @@ class Contenedor {
     }
   }
 
+  async getRandom() {
+    try {
+      const file = await fs.promises.readFile(this.filename, 'utf-8');
+      const parsedFile = JSON.parse(file);
+      const random =
+        parsedFile[Math.round(Mand.random() * (parsedFile.length - 1))];
+
+      return random;
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
   async deleteById(id) {
     try {
       const file = await fs.promises.readFile(this.filename, 'utf-8');
@@ -62,7 +74,7 @@ class Contenedor {
 
       if (!element) throw new Error(`Element with ID ${id} doesn't exist`);
 
-      const filteredArray = parsedFile.filter(el => el.id !== id); //
+      const filteredArray = parsedFile.filter(el => el.id !== id);
       await fs.promises.writeFile(this.filename, JSON.stringify(filteredArray));
     } catch (error) {
       console.error(error);
@@ -95,39 +107,4 @@ class Contenedor {
   }
 }
 
-(async () => {
-  const a = new Contenedor(path.join(__dirname, '..', 'temp', 'products.txt'));
-
-  const indexElement1 = await a.save({
-    //producto 1
-    title: 'Escuadra',
-    price: 123.45,
-    thumbnail:
-      'https://cdn3.iconfinder.com/data/icons/education-209/64/ruler-triangle-stationary-school-256.png',
-  });
-
-  const indexElement2 = await a.save({
-    title: 'Calculadora',
-    price: 234.56,
-    thumbnail:
-      'https://cdn3.iconfinder.com/data/icons/education-209/64/calculator-math-tool-school-256.png',
-  });
-
-  const indexElement3 = await a.save({
-    title: 'Globo Terráqueo',
-    price: 345.67,
-    thumbnail:
-      'https://cdn3.iconfinder.com/data/icons/education-209/64/globe-earth-geograhy-planet-school-256.png',
-  });
-
-  console.log(
-    `First: ${indexElement1}, second: ${indexElement2}, third: ${indexElement3}`
-  );
-
-  await a.deleteById(indexElement2);
-
-  const updatedList = await a.getAll();
-
-  console.log(updatedList);
-  console.log(updatedList.length);
-})();
+module.exports = Contenedor;
