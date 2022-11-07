@@ -1,4 +1,5 @@
 const fs = require('fs');
+const { get } = require('http');
 
 class Contenedor {
   constructor(filename) {
@@ -26,14 +27,14 @@ class Contenedor {
 
   async getById(id) {
     try {
-      file = await fs.promises.readFile(this.filename, 'utf-8');
+      const file = await this.getAll;
       const parsedFile = JSON.parse(file);
       const element = parsedFile.find(el => el.id === id);
 
       if (!element) throw new Error(`Element with ID ${id} doesn't exist`);
 
-      const { title, price, thumbnail } = el;
-      return { title, price, thumbnail };
+      const { id, ...resto } = element;
+      return resto;
     } catch (error) {
       console.error(error);
     }
@@ -55,7 +56,7 @@ class Contenedor {
 
   async getRandom() {
     try {
-      const file = await fs.promises.readFile(this.filename, 'utf-8');
+      const file = await this.getAll;
       const parsedFile = JSON.parse(file);
       const random =
         parsedFile[Math.round(Mand.random() * (parsedFile.length - 1))];
@@ -68,7 +69,7 @@ class Contenedor {
 
   async deleteById(id) {
     try {
-      const file = await fs.promises.readFile(this.filename, 'utf-8');
+      const file = await this.getAll;
       const parsedFile = JSON.parse(file);
       const element = parsedFile.find(el => el.id === id);
 
@@ -81,7 +82,7 @@ class Contenedor {
     }
   }
 
-  async deleteAll() {
+  static async deleteAll() {
     try {
       await fs.promises.writeFile(this.filename, JSON.stringify('[]'));
     } catch (error) {
@@ -93,7 +94,7 @@ class Contenedor {
     let file;
 
     try {
-      file = await fs.promises.readFile(this.filename, 'utf-8');
+      file = await this.getAll;
       return JSON.parse(file);
     } catch (error) {
       if (error.code === 'ENOENT') {
