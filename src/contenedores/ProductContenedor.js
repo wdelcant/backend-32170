@@ -27,7 +27,7 @@ class ProductContenedor {
     this.products = products;
   }
 
-  save(products) {
+  save(product) {
     product.id = this.getId();
     this.products.push(products);
     return product.id;
