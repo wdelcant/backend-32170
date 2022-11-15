@@ -38,8 +38,10 @@ productRouter.put('/:id', (request, response) => {
 });
 
 productRouter.delete('/:id', (request, response) => {
-  productContenedor.deleteById(request.params.id);
-  response.json({ message: 'Producto Borrado' });
+  const res = productContenedor.deleteById(request.params.id);
+  res === null
+    ? response.json({ error: 'Producto no encontrado' })
+    : response.json({ message: 'Producto eliminado', product: res });
 });
 
 module.exports = productRouter;
