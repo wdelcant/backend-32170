@@ -58,18 +58,11 @@ class ProductContenedor {
   }
 
   updateById(id, product) {
-    const product = this.getById(id);
-    if (!product) return null;
-    this.products = this.products.map(product => {
-      if (product.id === parseInt(id)) {
-        return {
-          ...product,
-          ...product,
-        };
-      }
-      return product;
-    });
-    return product;
+    const productIndex = this.products.findIndex(
+      item => item.id === parseInt(id)
+    );
+    this.products.splice(productIndex, 1, { id: parseInt(id), ...product });
+    return;
   }
 
   getId() {

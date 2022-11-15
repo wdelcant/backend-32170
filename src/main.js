@@ -1,5 +1,5 @@
 const express = require('express');
-const productRouter = require('./routers/products.js ');
+const productRouter = require('./routers/products');
 const logRequestInfo = require('./middlewares/logRequestInfo');
 const app = express();
 const port = 3000;
