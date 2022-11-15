@@ -29,13 +29,14 @@ class ProductContenedor {
 
   save(product) {
     product.id = this.getId();
-    this.products.push(products);
+    this.products.push(product);
     return product.id;
   }
 
   getById(id) {
-    const product = this.products.find(product => product.id === parseInt(id));
+    const product = this.products.find(item => item.id === parseInt(id));
     if (!product) return null;
+
     return product;
   }
 
@@ -44,12 +45,11 @@ class ProductContenedor {
   }
 
   deleteById(id) {
-    const product = this.getById(id);
-    if (!product) return null;
-    this.products = this.products.filter(
-      product => product.id !== parseInt(id)
+    const productIndex = this.products.findIndex(
+      item => item.id === parseInt(id)
     );
-    return product;
+    this.products.splice(productIndex, 1);
+    return;
   }
 
   deleteAll() {
@@ -68,8 +68,10 @@ class ProductContenedor {
   getId() {
     const lastProduct = this.products[this.products.length - 1];
     const lastId = lastProduct.id;
+
     return lastId + 1;
   }
 }
+
 
 module.exports = ProductContenedor;
